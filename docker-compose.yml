@@ -1,0 +1,35 @@
+version: "3.8"
+
+# Quick start:
+#   cp .env.example .env      # then edit NEXT_PUBLIC_API_URL / ALLOWED_ORIGINS
+#   docker compose up --build -d
+#
+# NEXT_PUBLIC_API_URL must be the URL your users' BROWSERS can reach
+# (e.g. http://<server-ip>:8000 or https://api.yourdomain.com) — it is
+# baked into the frontend at build time, so changing it later requires a
+# rebuild (docker compose up --build).
+
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    environment:
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-*}
+    volumes:
+      - narctrace_data:/app/data
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000}
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  narctrace_data:
